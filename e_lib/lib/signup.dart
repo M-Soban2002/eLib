@@ -16,13 +16,14 @@ class Signup extends StatelessWidget {
     final username = _usernameController.text;
     final password = _passwordController.text;
 
-    // Capture NavigatorState and ScaffoldMessengerState before the async call
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     debugPrint("hihiihii");
     try {
       debugPrint("hihiih,sngvlgjnslvnslvjnii");
       final response = await apiService.registerUser(email, username, password);
+      debugPrint("hihiih,,,,,,sngvlgjnslvnslvjnii");
+
       _handleRegistrationResult(navigator, scaffoldMessenger, response);
     } catch (error) {
       _showErrorSnackBar(scaffoldMessenger, 'An error occurred: $error');

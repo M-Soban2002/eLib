@@ -5,8 +5,9 @@ import 'package:logger/logger.dart';
 
 class ApiService {
   final Logger _logger = Logger();
+  int port = 52263;
   final String baseUrl =
-      'http://localhost:61365/'; // Replace with your server URL
+      'http://localhost:50288/api/v1/users/'; // Replace with your server URL
   final FlutterSecureStorage storage = FlutterSecureStorage();
 
   Future<Map<String, String>> _getHeaders() async {
@@ -20,6 +21,11 @@ class ApiService {
   Future<Map<String, dynamic>> registerUser(
       String email, String username, String password) async {
     final url = Uri.parse('${baseUrl}register');
+
+    // Log the request details
+    _logger
+        .d('Sending request to $url with email: $email, username: $username');
+
     final response = await http.post(
       url,
       headers: await _getHeaders(),
@@ -30,14 +36,18 @@ class ApiService {
       }),
     );
 
+    // Log the response status code
+    _logger.d('Received response with status code: ${response.statusCode}');
+
     if (response.statusCode == 200) {
-      _logger.e('An error occurred during registration');
       final data = jsonDecode(response.body);
       await storage.write(key: 'accessToken', value: data['accessToken']);
       await storage.write(key: 'refreshToken', value: data['refreshToken']);
+      _logger.i('User registered successfully');
       return {'statusCode': 200, 'message': 'User registered successfully'};
     } else {
       final errorData = jsonDecode(response.body);
+      _logger.e('Failed to register user: ${errorData['message']}');
       return {
         'statusCode': response.statusCode,
         'message': errorData['message'] ?? 'Failed to register user'
