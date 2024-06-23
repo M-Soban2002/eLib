@@ -4,11 +4,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 
 class ApiService {
-  final Logger _logger = Logger();
-  int port = 52263;
-  final String baseUrl =
-      'http://localhost:50288/api/v1/users/'; // Replace with your server URL
-  final FlutterSecureStorage storage = FlutterSecureStorage();
+  static final Logger _logger = Logger();
+  int port = 54911;
+  static const baseUrl =
+      'http://localhost:8000/api/v1/user/'; // Replace with your server URL
+  static final FlutterSecureStorage storage = FlutterSecureStorage();
 
   Future<Map<String, String>> _getHeaders() async {
     String? accessToken = await storage.read(key: 'accessToken');
@@ -19,39 +19,41 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> registerUser(
-      String email, String username, String password) async {
+      String username, String email, String password) async {
+    var baseUrl = 'http://localhost:8000/api/v1/user/';
     final url = Uri.parse('${baseUrl}register');
 
-    // Log the request details
-    _logger
-        .d('Sending request to $url with email: $email, username: $username');
+    _logger.d(
+        'Sending request to $url with email: $email, username: $username , password: $password');
 
-    final response = await http.post(
-      url,
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'email': email,
-        'username': username,
-        'password': password,
-      }),
-    );
+    try {
+      var response = await http.post(url,
+          body: jsonEncode({
+            'username': username,
+            'email': email,
+            'password': password,
+          }));
 
-    // Log the response status code
-    _logger.d('Received response with status code: ${response.statusCode}');
+      _logger.d('Received response with status code: ${response.statusCode}');
+      _logger.d('Response body: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await storage.write(key: 'accessToken', value: data['accessToken']);
-      await storage.write(key: 'refreshToken', value: data['refreshToken']);
-      _logger.i('User registered successfully');
-      return {'statusCode': 200, 'message': 'User registered successfully'};
-    } else {
-      final errorData = jsonDecode(response.body);
-      _logger.e('Failed to register user: ${errorData['message']}');
-      return {
-        'statusCode': response.statusCode,
-        'message': errorData['message'] ?? 'Failed to register user'
-      };
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        await storage.write(key: 'accessToken', value: data['accessToken']);
+        await storage.write(key: 'refreshToken', value: data['refreshToken']);
+        _logger.i('User registered successfully');
+        return {'statusCode': 200, 'message': 'User registered successfully'};
+      } else {
+        final errorData = jsonDecode(response.body);
+        _logger.e('Failed to register user: ${errorData['message']}');
+        return {
+          'statusCode': response.statusCode,
+          'message': errorData['message'] ?? 'Failed to register user'
+        };
+      }
+    } catch (e) {
+      _logger.e('An error occurred: $e');
+      return {'statusCode': 500, 'message': 'An error occurred'};
     }
   }
 

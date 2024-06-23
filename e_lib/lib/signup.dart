@@ -1,31 +1,30 @@
 import 'package:e_lib/elib_home.dart';
 import 'package:e_lib/service/apiclassusers.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 class Signup extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
 
-  final ApiService apiService = ApiService();
-
-  Signup({super.key}); // Initialize your apiService here
+  final ApiService apiService = ApiService(); // Initialize your apiService here
+  final Logger _logger = Logger(); // Initialize the logger
 
   void _register(BuildContext context) async {
     final email = _emailController.text;
     final username = _usernameController.text;
     final password = _passwordController.text;
 
+    // Capture NavigatorState and ScaffoldMessengerState before the async call
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    debugPrint("hihiihii");
-    try {
-      debugPrint("hihiih,sngvlgjnslvnslvjnii");
-      final response = await apiService.registerUser(email, username, password);
-      debugPrint("hihiih,,,,,,sngvlgjnslvnslvjnii");
 
+    try {
+      final response = await apiService.registerUser(username, email, password);
       _handleRegistrationResult(navigator, scaffoldMessenger, response);
     } catch (error) {
+      _logger.e('An error occurred during registration');
       _showErrorSnackBar(scaffoldMessenger, 'An error occurred: $error');
     }
   }
@@ -37,6 +36,7 @@ class Signup extends StatelessWidget {
         MaterialPageRoute(builder: (context) => ELib()),
       );
     } else {
+      _logger.w('Registration failed: ${response['message']}');
       _showErrorSnackBar(
           scaffoldMessenger, 'Registration failed: ${response['message']}');
     }
@@ -133,6 +133,7 @@ class Signup extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: TextField(
+                      obscureText: true,
                       controller: _passwordController,
                       decoration: InputDecoration(
                         border: InputBorder.none,
