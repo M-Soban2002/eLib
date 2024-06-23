@@ -28,6 +28,9 @@ class ApiService {
 
     try {
       var response = await http.post(url,
+          headers: {
+            'Content-Type': 'application/json', // Set the content-type header
+          },
           body: jsonEncode({
             'username': username,
             'email': email,

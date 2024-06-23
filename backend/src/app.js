@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 const app = express()
 
 app.use(cors(
-{    origin: 'http://localhost:52958' ,   //frontend ki port dlni
+{    origin: 'http://localhost:59223' ,   //frontend ki port dlni
     credentials: true 
 }))
 app.use(express.json({limit:"16kb"}))
